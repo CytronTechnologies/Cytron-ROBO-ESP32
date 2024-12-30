@@ -5,7 +5,7 @@ and then show the result on serial monitor. This code also applicable to any ana
 
 CONNECTION:
 
--GROVE 1-      | Maker Soil
+-GROVE 7-      | Maker Soil
 Robo ESP32     | 
 ---------------------------
 GND            | GND
