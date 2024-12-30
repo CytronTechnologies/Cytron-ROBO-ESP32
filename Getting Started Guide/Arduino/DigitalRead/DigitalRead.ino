@@ -5,7 +5,7 @@ and then show the result on serial monitor. This code also applicable to any dig
 
 CONNECTION:
 
--GROVE 2-      | Maker Soil
+-GROVE 2-      | Ultrasonic Sensor
 Robo ESP32     | 
 ---------------------------
 GND            | GND
