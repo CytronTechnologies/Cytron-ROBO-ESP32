@@ -21,10 +21,10 @@ Servo servo4;
 void setup() {
 
   // Attach each servo object to their corresponding pins
-  servo1.attach(9);  
-  servo2.attach(10);
-  servo3.attach(11);
-  servo4.attach(12);
+  servo1.attach(4);  
+  servo2.attach(5);
+  servo3.attach(18);
+  servo4.attach(19);
 }
 
 void loop() {
