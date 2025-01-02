@@ -1,7 +1,7 @@
 /*
 DESCRIPTION:
 Demo-Code for ROBO ESP32
-This demo code is written in CircuitPython and it serves
+This demo code is written in Arduino IDE and it serves
 as an easy quality check when you first receive the board.
 
 It plays a melody upon power up (slide power switch to ON)
