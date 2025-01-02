@@ -31,16 +31,17 @@ void setup() {
 
 void loop() {
 
+  // Read the input value from Maker Soil
   inputvalue = analogRead(MakerSoil);
 
-  readingvalue = (inputvalue * 5.0 / 4096);
+  //Convert input ADC value, 3.3V times 2^8 resolution
+  readingvalue = (inputvalue * 3.3 / 4096);
 
   Serial.print("Input Value : ");
   Serial.println(inputvalue);
   Serial.print("Reading Value : ");
   Serial.println(readingvalue);
   Serial.println("---------------------------");
-  
-  delay(1000);
 
+  delay(1000);
 }
