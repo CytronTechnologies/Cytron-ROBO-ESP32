@@ -55,8 +55,8 @@ EMAIL    : support@cytron.io
 #define M2A 14
 #define M2B 27
 
-CytronMD motor1(PWM_DIR, M1A, M1B);
-CytronMD motor2(PWM_DIR, M2A, M2B);
+CytronMD motor1(PWM_PWM, M1A, M1B);
+CytronMD motor2(PWM_PWM, M2A, M2B);
 
 /*
     Servos
@@ -112,6 +112,11 @@ void lightBlueLEDs(bool state) {
   }
 }
 
+void turnOffNeoPixels() {
+  strip.fill(0x000000);  // Black color (all LEDs off)
+  strip.show();          // Send the updated color to the strip
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -146,48 +151,91 @@ void setup() {
 
   // Power-on animation
   playMelody1();
+  delay(100);
+  motor2.setSpeed(-100);
+  delay(100);
+  motor2.setSpeed(100);
+  delay(100);
+  motor2.setSpeed(0);
+  motor1.setSpeed(-100);
+  delay(100);
+  motor1.setSpeed(100);
+  delay(100);
+  motor1.setSpeed(0);
+  motor2.setSpeed(0);
+
+  int leds[] = { 16, 17, 21, 22, 25, 26, 32, 33 };  // LED pins
+
+  // Set all LED pins as OUTPUT
   for (int i = 0; i < 8; i++) {
-    digitalWrite(led1 + i, HIGH);
+    pinMode(leds[i], OUTPUT);
+  }
+
+  // Turn on LEDs one by one
+  for (int i = 0; i < 8; i++) {
+    digitalWrite(leds[i], HIGH);
     delay(100);
+    digitalWrite(leds[i], LOW);
   }
-  for (int i = 0; i < 8; i++) {
-    digitalWrite(led1 + i, LOW);
-  }
+  delay(100);
 }
+
 
 void animateNeoPixels() {
   static int state = 0;
-  static uint32_t color = 0;
+  static uint8_t red = 255, green = 0, blue = 0;  // Start with red color
+  static unsigned long lastUpdate = 0;            // Last time LEDs were updated
+  const unsigned long interval = 10;              // Interval in milliseconds
+  const float brightnessFactor = 0.2;             // Brightness factor (0.0 to 1.0)
 
-  switch (state) {
-    case 0:
-      if (color < 0x101010) color += 0x010101;
-      else state++;
-      break;
-    case 1:
-      if ((color & 0x00FF00) > 0) color -= 0x000100;
-      else state++;
-      break;
-    case 2:
-      if ((color & 0xFF0000) > 0) color -= 0x010000;
-      else state++;
-      break;
-    case 3:
-      if ((color & 0x00FF00) < 0x1000) color += 0x000100;
-      else state++;
-      break;
-    case 4:
-      if ((color & 0x0000FF) > 0) color -= 1;
-      else state++;
-      break;
-    case 5:
-      if ((color & 0xFF0000) < 0x100000) color += 0x010000;
-      else state = 0;
-      break;
+  // Only update if the interval has passed
+  if (millis() - lastUpdate >= interval) {
+    lastUpdate = millis();  // Update the time
+
+    switch (state) {
+      case 0:  // Red to Yellow (increase Green)
+        if (green < 255) green++;
+        else state++;  // Move to next state
+        break;
+
+      case 1:  // Yellow to Green (decrease Red)
+        if (red > 0) red--;
+        else state++;  // Move to next state
+        break;
+
+      case 2:  // Green to Cyan (increase Blue)
+        if (blue < 255) blue++;
+        else state++;  // Move to next state
+        break;
+
+      case 3:  // Cyan to Blue (decrease Green)
+        if (green > 0) green--;
+        else state++;  // Move to next state
+        break;
+
+      case 4:  // Blue to Magenta (increase Red)
+        if (red < 255) red++;
+        else state++;  // Move to next state
+        break;
+
+      case 5:  // Magenta to Red (decrease Blue)
+        if (blue > 0) blue--;
+        else state = 0;  // Reset to initial state
+        break;
+    }
+
+    // Scale RGB values to control brightness
+    uint8_t scaledRed = red * brightnessFactor;
+    uint8_t scaledGreen = green * brightnessFactor;
+    uint8_t scaledBlue = blue * brightnessFactor;
+
+    // Combine scaled RGB values and display
+    uint32_t color = (scaledRed << 16) | (scaledGreen << 8) | scaledBlue;
+    strip.fill(color);
+    strip.show();
   }
-  strip.fill(color);
-  strip.show();
 }
+
 
 void loop() {
   // NeoPixel animation
@@ -203,8 +251,8 @@ void loop() {
     servo3.write(0);
     servo4.write(0);
 
-    motor1.setSpeed(50);   // Run motor1 at 50% speed
-    motor2.setSpeed(-50);  // Run motor2 at -50% speed
+    motor1.setSpeed(100);   // Run motor1 at 50% speed
+    motor2.setSpeed(-100);  // Run motor2 at -50% speed
 
     delay(1000);
   }
@@ -221,7 +269,7 @@ void loop() {
 
     motor1.setSpeed(0);  // Brake motor1
     motor2.setSpeed(0);  // Brake motor2
-
+    turnOffNeoPixels();
     delay(1000);
   }
 }
