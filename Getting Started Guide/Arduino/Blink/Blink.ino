@@ -45,35 +45,35 @@ void loop() {
 
   // Alternating blinking pattern for all LEDs
   digitalWrite(led1, HIGH);
-  delay(500);
+  delay(200);
   digitalWrite(led1, LOW);
-  delay(500);
+  delay(200);
   digitalWrite(led2, HIGH);
-  delay(500);
+  delay(200);
   digitalWrite(led2, LOW);
-  delay(500);
+  delay(200);
   digitalWrite(led3, HIGH);
-  delay(500);
+  delay(200);
   digitalWrite(led3, LOW);
-  delay(500);
+  delay(200);
   digitalWrite(led4, HIGH);
-  delay(500);
+  delay(200);
   digitalWrite(led4, LOW);
-  delay(500);
+  delay(200);
   digitalWrite(led5, HIGH);
-  delay(500);
+  delay(200);
   digitalWrite(led5, LOW);
-  delay(500);
+  delay(200);
   digitalWrite(led6, HIGH);
-  delay(500);
+  delay(200);
   digitalWrite(led6, LOW);
-  delay(500);
+  delay(200);
   digitalWrite(led7, HIGH);
-  delay(500);
+  delay(200);
   digitalWrite(led7, LOW);
-  delay(500);
+  delay(200);
   digitalWrite(led8, HIGH);
-  delay(500);
+  delay(200);
   digitalWrite(led8, LOW);
 
   delay(1000);  // Pause for 1 seconds before next sequence
