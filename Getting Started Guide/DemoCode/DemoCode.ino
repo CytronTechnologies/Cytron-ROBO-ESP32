@@ -4,7 +4,7 @@ Demo-Code for ROBO ESP32
 This demo code is written in Arduino IDE and it serves
 as an easy quality check when you first receive the board.
 
-It plays a melody upon power up (slide power switch to ON)
+It plays a Happy Birthday melody upon power up (slide power switch to ON)
 and shows running lights (blue LEDs) at the same time.
 Then the two RGB LEDs will animate the colors, while the 
 program checking push buttons' state, repeatedly.
@@ -31,21 +31,21 @@ EMAIL    : support@cytron.io
 /*
     LEDs
 */
-#define led1 16  // Pin D16 from Robo ESP32
-#define led2 17  // Pin D17 from Robo ESP32
-#define led3 21  // Pin D21 from Robo ESP32
-#define led4 22  // Pin D22 from Robo ESP32
-#define led5 25  // Pin D25 from Robo ESP32
-#define led6 26  // Pin D26 from Robo ESP32
-#define led7 32  // Pin D32 from Robo ESP32
-#define led8 33  // Pin D33 from Robo ESP32
+#define led1 16  // Pin D16 on Robo ESP32
+#define led2 17  // Pin D17 on Robo ESP32
+#define led3 21  // Pin D21 on Robo ESP32
+#define led4 22  // Pin D22 on Robo ESP32
+#define led5 25  // Pin D25 on Robo ESP32
+#define led6 26  // Pin D26 on Robo ESP32
+#define led7 32  // Pin D32 on Robo ESP32
+#define led8 33  // Pin D33 on Robo ESP32
 
 /*
     Buzzer and User Buttons
 */
-#define Buzzer 23
-#define UserButton1 34
-#define UserButton2 35
+#define Buzzer 23       // Buzzer Pin D23 on Robo ESP32
+#define UserButton1 34  // User Button 1 Pin D34 on Robo ESP32
+#define UserButton2 35  // User Button 2 Pin D35 on Robo ESP32
 
 /*
     Motors
@@ -78,31 +78,44 @@ const int numPixels = 2;  // Number of pixels (2 for two NeoPixels)
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(numPixels, Neopixel, NEO_GRB + NEO_KHZ800);
 
 /* Melody Notes and Durations */
-int melody[] = { 659, 659, 0, 659, 0, 523, 659, 0, 784 };
-int duration[] = { 150, 150, 150, 150, 150, 150, 150, 150, 200 };
+int melody[] = { 392, 392, 440, 392, 523, 494, 392, 392, 440, 392, 587, 523 };
 
-void playMelody1() {
-  for (int i = 0; i < sizeof(melody) / sizeof(melody[0]); i++) {
+// Short melody note durations for fast tempo (milliseconds)
+int duration[] = { 100, 100, 200, 200, 200, 270, 100, 100, 200, 200, 200, 270 };
+
+void playHappyBirthday() {
+  int notesCount = sizeof(melody) / sizeof(melody[0]);  // Calculate number of notes
+  for (int i = 0; i < notesCount; i++) {
     if (melody[i] == 0) {
-      delay(duration[i]);  // Rest for the duration
+      noTone(Buzzer);  // If the note is 0, turn off the buzzer
     } else {
-      tone(Buzzer, melody[i], duration[i]);
-      delay(duration[i]);
-      noTone(Buzzer);
+      tone(Buzzer, melody[i], duration[i]);  // Play the note with the specified duration
     }
+    delay(duration[i] * 1.3);  // Slight delay between notes for rhythm
   }
 }
 
-void playMelody2() {
-  for (int i = sizeof(melody) / sizeof(melody[0]) - 1; i >= 0; i--) {
-    if (melody[i] == 0) {
-      delay(duration[i]);  // Rest for the duration
-    } else {
-      tone(Buzzer, melody[i], duration[i]);
-      delay(duration[i]);
-      noTone(Buzzer);
-    }
-  }
+
+void playSound1() {
+  // Play a short melody when the User Button 34 is pressed
+  tone(Buzzer, 262, 100);  // Play C note
+  delay(100);
+  tone(Buzzer, 659, 100);  // Play E note
+  delay(100);
+  tone(Buzzer, 784, 100);  // Play G note
+  delay(100);
+  noTone(Buzzer);  // Turn off the buzzer
+}
+
+void playSound2() {
+  // Play a short melody when the User Button 35 is pressed
+  tone(Buzzer, 784, 100);  // Play C note
+  delay(100);
+  tone(Buzzer, 659, 100);  // Play E note
+  delay(100);
+  tone(Buzzer, 262, 100);  // Play G note
+  delay(100);
+  noTone(Buzzer);  // Turn off the buzzer
 }
 
 void lightBlueLEDs(bool state) {
@@ -150,7 +163,7 @@ void setup() {
   strip.show();
 
   // Power-on animation
-  playMelody1();
+  playHappyBirthday();
   delay(100);
   motor2.setSpeed(-100);
   delay(100);
@@ -232,7 +245,7 @@ void animateNeoPixels() {
     // Combine scaled RGB values and display
     uint32_t color = (scaledRed << 16) | (scaledGreen << 8) | scaledBlue;
     strip.fill(color);
-    strip.show();
+    strip.show();  //Display RGB
   }
 }
 
@@ -243,23 +256,40 @@ void loop() {
 
   // Button D34
   if (digitalRead(UserButton1) == LOW) {
-    playMelody1();
-    lightBlueLEDs(true);
+    playSound1();
+    lightBlueLEDs(true);  //Light up all GPIO LEDs
 
-    servo1.write(0);
-    servo2.write(0);
-    servo3.write(0);
-    servo4.write(0);
+    servo1.write(0);  // Servo pin D4 in 0 degree position
+    servo2.write(0);  // Servo pin D5 in 0 degree position
+    servo3.write(0);  // Servo pin D18 in 0 degree position
+    servo4.write(0);  // Servo pin D19 in 0 degree position
 
     motor1.setSpeed(100);   // Run motor1 at 50% speed
     motor2.setSpeed(-100);  // Run motor2 at -50% speed
-
-    delay(1000);
+    delay(200);
+    motor1.setSpeed(-100);  // Run motor1 at 50% speed
+    motor2.setSpeed(100);   // Run motor2 at -50% speed
+    delay(200);
+    motor1.setSpeed(100);   // Run motor1 at 50% speed
+    motor2.setSpeed(-100);  // Run motor2 at -50% speed
+    delay(200);
+    motor1.setSpeed(-100);  // Run motor1 at 50% speed
+    motor2.setSpeed(100);   // Run motor2 at -50% speed
+    delay(200);
+    motor1.setSpeed(100);   // Run motor1 at 50% speed
+    motor2.setSpeed(-100);  // Run motor2 at -50% speed
+    delay(200);
+    motor1.setSpeed(-100);  // Run motor1 at 50% speed
+    motor2.setSpeed(100);   // Run motor2 at -50% speed
+    delay(200);
+    motor1.setSpeed(100);   // Run motor1 at 50% speed
+    motor2.setSpeed(-100);  // Run motor2 at -50% speed
+    delay(200);
   }
 
   // Button D35
   if (digitalRead(UserButton2) == LOW) {
-    playMelody2();
+    playSound2();
     lightBlueLEDs(false);
 
     servo1.write(180);
