@@ -5,9 +5,6 @@ TaskHandle_t xTask2 = NULL;
 #define LED1 GPIO_NUM_16
 #define LED2 GPIO_NUM_17
 
-void myTask1(void* pvParameters);
-void myTask2(void* pvParameters);
-
 void setup() {
   Serial.begin(115200);
   pinMode(LED1, OUTPUT);

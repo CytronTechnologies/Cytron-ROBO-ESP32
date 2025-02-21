@@ -8,30 +8,6 @@ TaskHandle_t xTask2 = NULL;  // Task handle for Task 2
 int counter1 = 1;
 int counter2 = 1;
 
-/* Task 1 function: Blink the LED and suspend itself after 5 counter */
-void myTask1(void* parameters) {
-  for (;;) {
-    digitalWrite(LED1, !digitalRead(LED1));
-    Serial.print("\tTask 1 counter: ");
-    Serial.println(counter1++);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-    if (counter1 == 5) {
-      Serial.println("\t\tSuspending Task 1");
-      vTaskSuspend(NULL);  // Suspend itself
-    }
-  }
-}
-
-void myTask2(void* parameters) {
-  for (;;) {
-    digitalWrite(LED2, !digitalRead(LED2));
-    Serial.print("\tTask 2 counter: ");
-    Serial.println(counter2++);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-  }
-}
-
 void setup() {
   Serial.begin(115200);
 
@@ -56,6 +32,32 @@ void setup() {
     &xTask2               /* Task handle to keep track of created task */
   );
 }
+
+/* Task 1 function: Blink the LED and suspend itself after 5 counter */
+void myTask1(void* parameters) {
+  for (;;) {
+    digitalWrite(LED1, !digitalRead(LED1));
+    Serial.print("\tTask 1 counter: ");
+    Serial.println(counter1++);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+    if (counter1 == 5) {
+      Serial.println("\t\tSuspending Task 1");
+      vTaskSuspend(NULL);  // Suspend itself
+    }
+  }
+}
+
+void myTask2(void* parameters) {
+  for (;;) {
+    digitalWrite(LED2, !digitalRead(LED2));
+    Serial.print("\tTask 2 counter: ");
+    Serial.println(counter2++);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
+}
+
+
 
 void loop() {
   // Resume Task 1 when counter2 equals 20
