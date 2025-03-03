@@ -71,7 +71,6 @@ Servo servo2;
 Servo servo3;
 Servo servo4;
 
-
 const int Neopixel = 15;  // Pin connected to the NeoPixel data input
 const int numPixels = 2;  // Number of pixels (2 for two NeoPixels)
 
@@ -94,7 +93,6 @@ void playHappyBirthday() {
     delay(duration[i] * 1.3);  // Slight delay between notes for rhythm
   }
 }
-
 
 void playSound1() {
   // Play a short melody when the User Button 34 is pressed
@@ -193,7 +191,6 @@ void setup() {
   delay(100);
 }
 
-
 void animateNeoPixels() {
   static int state = 0;
   static uint8_t red = 255, green = 0, blue = 0;  // Start with red color
@@ -245,19 +242,22 @@ void animateNeoPixels() {
     // Combine scaled RGB values and display
     uint32_t color = (scaledRed << 16) | (scaledGreen << 8) | scaledBlue;
     strip.fill(color);
-    strip.show();  //Display RGB
+    strip.show();  // Display RGB
   }
 }
 
+bool neoPixelsOff = false;
 
 void loop() {
   // NeoPixel animation
-  animateNeoPixels();
+  if (!neoPixelsOff) {
+    animateNeoPixels();
+  }
 
   // Button D34
   if (digitalRead(UserButton1) == LOW) {
     playSound1();
-    lightBlueLEDs(true);  //Light up all GPIO LEDs
+    lightBlueLEDs(true);  // Light up all GPIO LEDs
 
     servo1.write(0);  // Servo pin D4 in 0 degree position
     servo2.write(0);  // Servo pin D5 in 0 degree position
@@ -285,6 +285,8 @@ void loop() {
     motor1.setSpeed(100);   // Run motor1 at 50% speed
     motor2.setSpeed(-100);  // Run motor2 at -50% speed
     delay(200);
+
+    neoPixelsOff = false;  // Turn NeoPixels back on
   }
 
   // Button D35
@@ -300,6 +302,7 @@ void loop() {
     motor1.setSpeed(0);  // Brake motor1
     motor2.setSpeed(0);  // Brake motor2
     turnOffNeoPixels();
+    neoPixelsOff = true;
     delay(1000);
   }
 }
