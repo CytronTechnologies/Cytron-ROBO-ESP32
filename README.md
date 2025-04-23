@@ -22,4 +22,4 @@ Still new to Robo ESP32 or ESP32, can visit the Getting Started Guide:
 ## Support  
 If you need further assistance, we welcome you to our [technical forum](http://forum.cytron.io) or contact us through email support@cytron.io where our team will gladly assist you. 
 
-Let's start building with ROBO ESP32!
+Let's start building with Robo ESP32!
