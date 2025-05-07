@@ -3,197 +3,12 @@ author unknown
 version 1 0 
 description ''
 
-script 166 91 {
+script 100 78 {
 whenStarted
 OLEDInit_I2C 'OLED_0.96in' '3C' '-' false
 forever {
-  OLEDwrite 'Hello Makers!' 0 0 false
+  OLEDwrite 'Hello!' 0 0 false
 }
-}
-
-
-module 'Distance (HC-SR04)' Input
-author 'Joan Guillén & Josep Ferràndiz'
-version 1 4 
-tags sensor 'hc-sr04' distance ultrasound 
-description 'Support for the HC-SR04 ultrasound distance sensor.'
-variables _sr04_last 
-
-  spec 'r' 'distance (cm)' 'distance (cm) trigger _ echo _' 'num num' 2 4
-  spec 'r' 'sr04_distanceOnePin' 'distance (cm) pin _' 'num' 0
-
-to 'distance (cm)' trig ech {
-  comment 'Contributed by Joan Guillén and Josep Ferràndiz'
-  digitalWriteOp trig false
-  waitMicros 2
-  digitalWriteOp trig true
-  waitMicros 50
-  digitalWriteOp trig false
-  local 'start' (microsOp)
-  waitUntil (or (not (digitalReadOp ech)) (((microsOp) - start) > 23320))
-  waitUntil (or (digitalReadOp ech) (((microsOp) - start) > 23320))
-  if (((microsOp) - start) > 23320) {
-    comment 'Distance sensor not ready; return the last distance reading'
-    return _sr04_last
-  }
-  comment 'Pulse sent. Measure time until echo is detected.'
-  start = (microsOp)
-  waitUntil (or (not (digitalReadOp ech)) (((microsOp) - start) > 23320))
-  _sr04_last = ((10 * ((microsOp) - start)) / 583)
-  comment 'Leave some time for reverberations to die away.'
-  waitMillis 10
-  return _sr04_last
-}
-
-to sr04_distanceOnePin pin {
-  return ('distance (cm)' pin pin)
-}
-
-
-module 'HTTP client' Comm
-author MicroBlocks
-version 1 4 
-depends WiFi 
-tags http network get post put delete 
-choices requestTypes GET POST PUT DELETE 
-description 'Send HTTP requests and get responses back. You can use this library to fetch or store data in online servers, or to control other Wifi-enabled boards.
-'
-
-  spec 'r' '_http_body_start' '_http_body_start _' 'auto' ''
-  spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
-  spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
-  spec 'r' '_http_header' '_header _ of response _' 'auto auto' 'content-length' ''
-  spec 'r' '_http_status' '_status of response _' 'auto' ''
-  spec 'r' '_line_end' '_line_end'
-  spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
-  spec 'r' '_request_url' '_request_url _ method _ body _ : port _' 'str menu.requestTypes str num' '' 'GET' '' 80
-  spec 'r' '_readHTTPResponse' '_readHTTPResponse'
-  spec 'r' 'http܃//' 'http #SVG#colon-double-slash _ : port _' 'auto num' 'microblocks.fun/example.txt' 80
-  spec ' ' 'request' '_ data _ to http #SVG#colon-double-slash _ : port _' 'menu.requestTypes str str num' 'POST' 'MicroBlocks is fun' 'microblocks.fun' 80
-
-to '_http_body_start' response {
-  return (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) response) + 4)
-}
-
-to '_http_header' header response {
-  local 'header text' ('_http_header_text' response)
-  header = ('_lowercase' header)
-  repeatUntil ((size (v 'header text')) < 3) {
-    local 'key' ('[data:copyFromTo]' (v 'header text') 1 (('[data:find]' ':' (v 'header text')) - 1))
-    if (('_lowercase' key) == header) {
-      return ('[data:copyFromTo]' (v 'header text') (('[data:find]' ':' (v 'header text')) + 2) (('[data:find]' ('_line_end') (v 'header text')) - 1))
-    }
-    'header text' = ('[data:copyFromTo]' (v 'header text') (('[data:find]' ('_line_end') (v 'header text')) + 2))
-  }
-  return (booleanConstant false)
-}
-
-to '_http_header_text' response {
-  local 'headersStart' (('[data:find]' ('_line_end') response) + 2)
-  return ('[data:copyFromTo]' response headersStart (('_http_body_start' response) + 2))
-}
-
-to '_http_status' response {
-  return (('[data:copyFromTo]' ('_http_status_text' response) 1 4) + 0)
-}
-
-to '_http_status_text' response {
-  return ('[data:copyFromTo]' response ('[data:find]' ' ' response) ('[data:find]' ('_line_end') response))
-}
-
-to '_line_end' {
-  return ('[data:unicodeString]' ('[data:makeList]' 13 10))
-}
-
-to '_lowercase' string {
-  local 'lowercased' ''
-  local 'char code' ''
-  for c (size string) {
-    'char code' = ('[data:unicodeAt]' c string)
-    if (and ((v 'char code') >= 65) ((v 'char code') <= 90)) {
-      'char code' = ((v 'char code') + 32)
-    }
-    lowercased = ('[data:join]' lowercased ('[data:unicodeString]' (v 'char code')))
-  }
-  return lowercased
-}
-
-to '_readHTTPResponse' {
-  local 'response' ''
-  local 'lastChunkTime' (millisOp)
-  repeatUntil (not ('[net:httpIsConnected]')) {
-    local 'chunk' ('[net:httpResponse]')
-    if ((size chunk) > 0) {
-      response = ('[data:join]' response chunk)
-      lastChunkTime = (millisOp)
-    } (((millisOp) - lastChunkTime) > 10000) {
-      return response
-    }
-    waitMillis 20
-  }
-  response = ('[data:join]' response ('[net:httpResponse]'))
-  return response
-}
-
-to '_request_url' url method body optionalPort {
-  local 'port' 80
-  if ((pushArgCount) > 3) {
-    port = optionalPort
-  }
-  local 'host' ''
-  local 'path' ''
-  local 'slashPosition' ('[data:find]' '/' url)
-  if (slashPosition > 0) {
-    host = ('[data:copyFromTo]' url 1 (slashPosition - 1))
-    path = ('[data:copyFromTo]' url (slashPosition + 1))
-  } else {
-    host = url
-  }
-  if (('[net:wifiStatus]') != 'Connected') {
-    return ('[data:join]' '0 Not Connected' ('_line_end'))
-  }
-  '[net:httpConnect]' host port
-  if (not ('[net:httpIsConnected]')) {
-    return ('[data:join]' '0 Could not connect to server' ('_line_end'))
-  }
-  '[net:httpRequest]' method host path
-  return ('_readHTTPResponse')
-}
-
-to 'http܃//' url optionalPort {
-  local 'port' 80
-  if ((pushArgCount) > 1) {
-    port = optionalPort
-  }
-  local 'response' ('_request_url' url 'GET' '' port)
-  if (response != '') {
-    if (('_http_status' response) == 200) {
-      return ('[data:copyFromTo]' response ('_http_body_start' response))
-    } else {
-      return ('_http_status_text' response)
-    }
-  } else {
-    return 'Failed to get response'
-  }
-}
-
-to request method data url optionalPort {
-  local 'port' 80
-  if ((pushArgCount) > 3) {
-    port = optionalPort
-  }
-  local 'response' ('_request_url' url method data port)
-  if (response != '') {
-    local 'status' ('_http_status' response)
-    local 'body start' ('_http_body_start' response)
-    if (and (200 == status) ((v 'body start') > 0)) {
-      sayIt ('[data:copyFromTo]' response (v 'body start'))
-    } else {
-      sayIt ('_http_status_text' response)
-    }
-  } else {
-    sayIt 'Failed to get response'
-  }
 }
 
 
@@ -410,10 +225,10 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
 version 1 18 
-choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+choices ModeMenu Horizontal Vertical 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
-choices ModeMenu Horizontal Vertical 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
 Changes:
 - always display buffer
@@ -1253,209 +1068,82 @@ to 'defer display updates' {
 module 'Robo ESP32' Input
 author 'Cytron Technologies'
 version 1 0 
-depends Servo NeoPixel Tone 'OLED Graphics' 'Distance (HC-SR04)' 
+depends Servo NeoPixel Tone 
 choices roboesp32motor M1 M2 both 
 choices roboesp32motorrotation CW CCW 
-choices roboesp32led D16 D17 D21 D22 D25 D26 D32 D33 
 choices roboesp32servo D4 D5 D18 D19 
 choices roboesp32rgb '0' '1' all 
+choices roboesp32gpio D16 D17 D21 D22 D25 D26 D32 D33 all 
 choices roboesp32userbutton D34 D35 
-choices roboesp32switch ON OFF 
-description 'Cytron ROBO ESP32: Simplifying Robotics with NodeMCU ESP32
+description 'Cytron Robo ESP32: Simplifying Robotics with ESP32
+
+
 
 '
-variables _np_pixels _roboesp32_M2B _roboesp32_M1B _roboesp32_M1A _roboesp32_M2A speed _roboesp32_Servo1 _roboesp32_Servo4 _roboesp32_Servo3 _roboesp32_Servo2 _roboesp32_userbutton1 _roboesp32_userbutton2 _roboesp32_led2 _roboesp32_led4 _roboesp32_led3 _roboesp32_led7 _roboesp32_led8 _roboesp32_led1 _roboesp32_led6 _roboesp32_led5 
 
-  spec ' ' 'led ON at' 'turn _ IO LED at pin _' 'menu.roboesp32switch menu.roboesp32led' 'ON' 'D16'
-  spec ' ' 'turn' 'turn _ all IO LEDs' 'menu.roboesp32switch' 'ON'
+  spec ' ' 'roboESP32_set_GPIO' 'roboESP32 set GPIO _ _' 'menu.roboesp32gpio bool' 'D16' true
   space
-  spec ' ' 'RGB' 'set RGB _ color _' 'menu.roboesp32rgb color' '0'
-  spec ' ' 'set RGB LED brightness' 'set RGB LED brightness _ %' 'auto' 100
-  spec ' ' 'turn off RGB' 'clear RGB'
+  spec ' ' 'roboESP32_set_RGB' 'roboESP32 set RGB _ color _' 'menu.roboesp32rgb color' '0'
+  spec ' ' 'roboESP32_clear_RGB' 'roboESP32 clear RGB'
+  spec ' ' 'roboESP32_increase_RGB _brightness' 'roboESP32 increase RGB brightness by _ %' 'num' 100
   space
-  spec ' ' 'move Motor forward' 'move Motor _ forward at speed _ %' 'menu.roboesp32motor auto' 'M1' 100
-  spec ' ' 'move Motor backward' 'move Motor _ backward at speed _ %' 'menu.roboesp32motor auto' 'M1' 100
-  spec ' ' 'stop Motor' 'stop Motor _' 'menu.roboesp32motor' 'M1'
-  spec ' ' 'm' 'motor _ rotates _ at speed _ %' 'menu.roboesp32motor menu.roboesp32motorrotation auto' 'M1' 'CW' 100
-  spec ' ' 'turnleft' 'turn left at speed _ %' 'auto' 100
-  spec ' ' 'myBlock' 'turn right at speed _ %' 'auto' 100
+  spec ' ' 'roboESP32_set_motor' 'roboESP32 set motor _ power _ (-100 to 100)' 'menu.roboesp32motor num' 'M1' 100
+  spec ' ' 'roboESP32_stop_motor' 'roboESP32 stop motor _' 'menu.roboesp32motor' 'M1'
   space
-  spec ' ' 'set servo pin' 'set servo pin _ angle as _ degrees (-90 to 90)' 'menu.roboesp32servo auto' 'D4' 0
+  spec ' ' 'roboESP32_set_servo' 'roboESP32 set servo _ to _ degrees (-90 to 90)' 'menu.roboesp32servo auto' 'D4' 0
   space
-  spec 'r' 'user button' 'user button _ is pressed' 'menu.roboesp32userbutton' 'D34'
+  spec ' ' 'roboESP32_play_song' 'roboESP32 play Happy Birthday!'
   space
-  spec ' ' 'play Happy Birthday!' 'play Happy Birthday!'
+  spec 'r' 'roboESP32_button' 'roboESP32 button _ is pressed' 'menu.roboesp32userbutton' 'D34'
+  space
+  spec ' ' '_roboESP32_motor1' '_roboESP32_motor1 power _ (-100 to 100)' 'num' 100
+  spec ' ' '_roboESP32_motor2' '_roboESP32_motor2 power _ (-100 to 100)' 'num' 100
+  spec 'r' '_roboESP32_pinNum' '_roboESP32_pinNum _' 'str' 'D1'
 
-to RGB rgb color {
-  local '_roboesp32_RGB' 15
-  if (0 == _np_pixels) {
-    neoPixelAttach 2 _roboesp32_RGB
-  }
-  if (rgb == '0') {
-    atPut 1 _np_pixels color
-  } (rgb == '1') {
-    atPut 2 _np_pixels color
+to '_roboESP32_motor1' power {
+  local 'pinM1A' 12
+  local 'pinM1B' 13
+  if (power < 0) {
+    analogWriteOp pinM1A ((absoluteValue power) * 11)
+    analogWriteOp pinM1B 0
   } else {
-    atPut 1 _np_pixels color
-    atPut 2 _np_pixels color
-  }
-  '_NeoPixel_update'
-}
-
-to 'led ON at' led pin {
-  _roboesp32_led1 = 16
-  _roboesp32_led2 = 17
-  _roboesp32_led3 = 21
-  _roboesp32_led4 = 22
-  _roboesp32_led5 = 25
-  _roboesp32_led6 = 26
-  _roboesp32_led7 = 32
-  _roboesp32_led8 = 33
-  if (and (led == 'ON') (pin == 'D16')) {
-    digitalWriteOp _roboesp32_led1 true
-  } (and (led == 'OFF') (pin == 'D16')) {
-    digitalWriteOp _roboesp32_led1 false
-  } (and (led == 'ON') (pin == 'D17')) {
-    digitalWriteOp _roboesp32_led2 true
-  } (and (led == 'OFF') (pin == 'D17')) {
-    digitalWriteOp _roboesp32_led2 false
-  } (and (led == 'ON') (pin == 'D21')) {
-    digitalWriteOp _roboesp32_led3 true
-  } (and (led == 'OFF') (pin == 'D21')) {
-    digitalWriteOp _roboesp32_led3 false
-  } (and (led == 'ON') (pin == 'D22')) {
-    digitalWriteOp _roboesp32_led4 true
-  } (and (led == 'OFF') (pin == 'D22')) {
-    digitalWriteOp _roboesp32_led4 false
-  } (and (led == 'ON') (pin == 'D25')) {
-    digitalWriteOp _roboesp32_led5 true
-  } (and (led == 'OFF') (pin == 'D25')) {
-    digitalWriteOp _roboesp32_led5 false
-  } (and (led == 'ON') (pin == 'D26')) {
-    digitalWriteOp _roboesp32_led6 true
-  } (and (led == 'OFF') (pin == 'D26')) {
-    digitalWriteOp _roboesp32_led6 false
-  } (and (led == 'ON') (pin == 'D32')) {
-    digitalWriteOp _roboesp32_led7 true
-  } (and (led == 'OFF') (pin == 'D32')) {
-    digitalWriteOp _roboesp32_led7 false
-  } (and (led == 'ON') (pin == 'D33')) {
-    digitalWriteOp _roboesp32_led8 true
-  } (and (led == 'OFF') (pin == 'D33')) {
-    digitalWriteOp _roboesp32_led8 false
+    analogWriteOp pinM1A 0
+    analogWriteOp pinM1B (power * 11)
   }
 }
 
-to m motor rotation speed {
-  _roboesp32_M1A = 12
-  _roboesp32_M1B = 13
-  _roboesp32_M2A = 14
-  _roboesp32_M2B = 27
-  if (and (motor == 'M1') (rotation == 'CW')) {
-    comment '
-
-Robo ESP32: Motor 1 rotates clockwise
-
-'
-    analogWriteOp _roboesp32_M1A (speed * 11)
-    analogWriteOp _roboesp32_M1B (speed * 0)
-  } (and (motor == 'M1') (rotation == 'CCW')) {
-    comment '
-
-Robo ESP32: Motor 1 rotates counter-clockwise
-
-'
-    analogWriteOp _roboesp32_M1A (speed * 0)
-    analogWriteOp _roboesp32_M1B (speed * 11)
-  } (and (motor == 'M2') (rotation == 'CW')) {
-    comment '
-
-Robo ESP32: Motor 2 rotates clockwise
-
-'
-    analogWriteOp _roboesp32_M2A (speed * 11)
-    analogWriteOp _roboesp32_M2B (speed * 0)
-  } (and (motor == 'M2') (rotation == 'CCW')) {
-    comment '
-
-Robo ESP32: Motor 2 rotates counter-clockwise
-
-'
-    analogWriteOp _roboesp32_M2A (speed * 0)
-    analogWriteOp _roboesp32_M2B (speed * 11)
-  } (and (motor == 'both') (rotation == 'CW')) {
-    comment '
-
-Robo ESP32: Both Motor rotates clockwise
-
-'
-    analogWriteOp _roboesp32_M1A (speed * 11)
-    analogWriteOp _roboesp32_M1B (speed * 0)
-    analogWriteOp _roboesp32_M2A (speed * 11)
-    analogWriteOp _roboesp32_M2B (speed * 0)
-  } (and (motor == 'both') (rotation == 'CCW')) {
-    comment '
-
-Robo ESP32: Both Motor rotates counter-clockwise
-
-'
-    analogWriteOp _roboesp32_M1A (speed * 0)
-    analogWriteOp _roboesp32_M1B (speed * 11)
-    analogWriteOp _roboesp32_M2A (speed * 0)
-    analogWriteOp _roboesp32_M2B (speed * 11)
+to '_roboESP32_motor2' power {
+  local 'pinM2A' 14
+  local 'pinM2B' 27
+  if (power < 0) {
+    analogWriteOp pinM2A ((absoluteValue power) * 11)
+    analogWriteOp pinM2B 0
+  } else {
+    analogWriteOp pinM2A 0
+    analogWriteOp pinM2B (power * 11)
   }
 }
 
-to 'move Motor backward' motor speed {
-  _roboesp32_M1A = 12
-  _roboesp32_M1B = 13
-  _roboesp32_M2A = 14
-  _roboesp32_M2B = 27
-  if (motor == 'M1') {
-    analogWriteOp _roboesp32_M1A (speed * 0)
-    analogWriteOp _roboesp32_M1B (speed * 11)
-  } (motor == 'M2') {
-    analogWriteOp _roboesp32_M2A (speed * 0)
-    analogWriteOp _roboesp32_M2B (speed * 11)
-  } (motor == 'both') {
-    analogWriteOp _roboesp32_M1A (speed * 0)
-    analogWriteOp _roboesp32_M1B (speed * 11)
-    analogWriteOp _roboesp32_M2A (speed * 0)
-    analogWriteOp _roboesp32_M2B (speed * 11)
-  }
+to '_roboESP32_pinNum' pinName {
+  comment 'Convert a pin name to a pin number. For example "D21" is converted to the number 21.'
+  return ('[data:convertType]' ('[data:copyFromTo]' pinName 2) 'number')
 }
 
-to 'move Motor forward' motor speed {
-  _roboesp32_M1A = 12
-  _roboesp32_M1B = 13
-  _roboesp32_M2A = 14
-  _roboesp32_M2B = 27
-  if (motor == 'M1') {
-    analogWriteOp _roboesp32_M1A (speed * 11)
-    analogWriteOp _roboesp32_M1B (speed * 0)
-  } (motor == 'M2') {
-    analogWriteOp _roboesp32_M2A (speed * 11)
-    analogWriteOp _roboesp32_M2B (speed * 0)
-  } (motor == 'both') {
-    analogWriteOp _roboesp32_M1A (speed * 11)
-    analogWriteOp _roboesp32_M1B (speed * 0)
-    analogWriteOp _roboesp32_M2A (speed * 11)
-    analogWriteOp _roboesp32_M2B (speed * 0)
-  }
+to roboESP32_button buttonPin {
+  return (not (digitalReadOp ('_roboESP32_pinNum' buttonPin)))
 }
 
-to myBlock speed {
-  _roboesp32_M1A = 12
-  _roboesp32_M1B = 13
-  _roboesp32_M2A = 14
-  _roboesp32_M2B = 27
-  analogWriteOp _roboesp32_M2A (speed * 0)
-  analogWriteOp _roboesp32_M2B (speed * 0)
-  analogWriteOp _roboesp32_M1A (speed * 11)
-  analogWriteOp _roboesp32_M1B (speed * 0)
+to roboESP32_clear_RGB {
+  if (0 == _np_pixels) {neoPixelAttach 2 15}
+  clearNeoPixels
 }
 
-to 'play Happy Birthday!' {
+to 'roboESP32_increase_RGB _brightness' delta {
+  if (0 == _np_pixels) {neoPixelAttach 2 15}
+  NeoPixel_brighten_all delta
+}
+
+to roboESP32_play_song {
   'attach buzzer to pin' 23
   local 'eight' 200
   local 'quarter' (2 * eight)
@@ -1474,104 +1162,42 @@ to 'play Happy Birthday!' {
   'play tone' 'g' 1 half
 }
 
-to 'set RGB LED brightness' delta {
-  for i (size _np_pixels) {
-    '_NeoPixel_increaseRGB' i (delta / 10)
-  }
-  '_NeoPixel_update'
-}
-
-to 'set servo pin' servo degrees {
-  _roboesp32_Servo1 = 4
-  _roboesp32_Servo2 = 5
-  _roboesp32_Servo3 = 18
-  _roboesp32_Servo4 = 19
-  if (servo == 'D4') {
-    setServoAngle _roboesp32_Servo1 degrees
-  } (servo == 'D5') {
-    setServoAngle _roboesp32_Servo2 degrees
-  } (servo == 'D18') {
-    setServoAngle _roboesp32_Servo3 degrees
-  } (servo == 'D19') {
-    setServoAngle _roboesp32_Servo4 degrees
-  }
-}
-
-to 'stop Motor' motor {
-  _roboesp32_M1A = 12
-  _roboesp32_M1B = 13
-  _roboesp32_M2A = 14
-  _roboesp32_M2B = 27
-  if (motor == 'M1') {
-    analogWriteOp _roboesp32_M1A (speed * 0)
-    analogWriteOp _roboesp32_M1B (speed * 0)
-  } (motor == 'M2') {
-    analogWriteOp _roboesp32_M2A (speed * 0)
-    analogWriteOp _roboesp32_M2B (speed * 0)
-  } (motor == 'both') {
-    analogWriteOp _roboesp32_M1A (speed * 0)
-    analogWriteOp _roboesp32_M1B (speed * 0)
-    analogWriteOp _roboesp32_M2A (speed * 0)
-    analogWriteOp _roboesp32_M2B (speed * 0)
-  }
-}
-
-to turn led {
-  _roboesp32_led1 = 16
-  _roboesp32_led2 = 17
-  _roboesp32_led3 = 21
-  _roboesp32_led4 = 22
-  _roboesp32_led5 = 25
-  _roboesp32_led6 = 26
-  _roboesp32_led7 = 32
-  _roboesp32_led8 = 33
-  if (led == 'ON') {
-    digitalWriteOp _roboesp32_led1 true
-    digitalWriteOp _roboesp32_led2 true
-    digitalWriteOp _roboesp32_led3 true
-    digitalWriteOp _roboesp32_led4 true
-    digitalWriteOp _roboesp32_led5 true
-    digitalWriteOp _roboesp32_led6 true
-    digitalWriteOp _roboesp32_led7 true
-    digitalWriteOp _roboesp32_led8 true
-  } (led == 'OFF') {
-    digitalWriteOp _roboesp32_led1 false
-    digitalWriteOp _roboesp32_led2 false
-    digitalWriteOp _roboesp32_led3 false
-    digitalWriteOp _roboesp32_led4 false
-    digitalWriteOp _roboesp32_led5 false
-    digitalWriteOp _roboesp32_led6 false
-    digitalWriteOp _roboesp32_led7 false
-    digitalWriteOp _roboesp32_led8 false
-  }
-}
-
-to 'turn off RGB' {
-  local '_roboesp32_RGB' 15
-  neoPixelAttach 2 _roboesp32_RGB
-  atPut 'all' _np_pixels 0
-  '_NeoPixel_update'
-}
-
-to turnleft speed {
-  _roboesp32_M1A = 12
-  _roboesp32_M1B = 13
-  _roboesp32_M2A = 14
-  _roboesp32_M2B = 27
-  analogWriteOp _roboesp32_M2A (speed * 11)
-  analogWriteOp _roboesp32_M2B (speed * 0)
-  analogWriteOp _roboesp32_M1A (speed * 0)
-  analogWriteOp _roboesp32_M1B (speed * 0)
-}
-
-to 'user button' button {
-  _roboesp32_userbutton1 = 34
-  _roboesp32_userbutton2 = 35
-  if (button == 'D34') {
-    return (not (digitalReadOp _roboesp32_userbutton1))
+to roboESP32_set_GPIO pin onOff {
+  if ('all' == pin) {
+    for p ('[data:makeList]' 16 17 21 22 25 26 32 33) {
+      digitalWriteOp p onOff
+    }
   } else {
-    return (not (digitalReadOp _roboesp32_userbutton2))
+    digitalWriteOp ('_roboESP32_pinNum' pin) onOff
   }
+}
+
+to roboESP32_set_RGB whichRGB color {
+  if (0 == _np_pixels) {neoPixelAttach 2 15}
+  if ('all' == whichRGB) {
+    neoPixelSetAllToColor color
+  } else {
+    setNeoPixelColor (whichRGB + 1) color
+  }
+}
+
+to roboESP32_set_motor motor power {
+  if ('both' == motor) {
+    '_roboESP32_motor1' power
+    '_roboESP32_motor2' power
+  } ('M1' == motor) {
+    '_roboESP32_motor1' power
+  } ('M2' == motor) {
+    '_roboESP32_motor2' power
+  }
+}
+
+to roboESP32_set_servo servoPin degrees {
+  setServoAngle ('_roboESP32_pinNum' servoPin) degrees
+}
+
+to roboESP32_stop_motor motor {
+  roboESP32_set_motor motor 0
 }
 
 
@@ -1851,77 +1477,5 @@ to startTone freq {
 
 to stopTone {
   startTone 0
-}
-
-
-module WiFi Comm
-author MicroBlocks
-version 1 8 
-tags communication network 
-description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
-'
-
-  spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
-  spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
-  space
-  spec 'r' 'getIPAddress' 'IP address'
-  spec 'r' '[net:myMAC]' 'MAC address'
-  space
-  spec ' ' '[net:allowWiFiAndBLE]' 'allow WiFi while using BLE _' 'bool' true
-
-to getIPAddress {
-  return ('[net:myIPAddress]')
-}
-
-to wifiConnect ssid password fixedIP gatewayIP subnetIP {
-  if (not ('[net:hasWiFi]')) {return}
-  '[net:stopWiFi]'
-  if ((pushArgCount) < 5) {
-    '[net:startWiFi]' ssid password
-  } else {
-    '[net:startWiFi]' ssid password false fixedIP gatewayIP subnetIP
-  }
-  local 'startMSecs' (millisOp)
-  repeatUntil (('[net:myIPAddress]') != '0.0.0.0') {
-    comment 'Timeout after N seconds'
-    if (((millisOp) - startMSecs) > 30000) {
-      sayIt 'Could not connect'
-      return 0
-    }
-    comment 'Slow blink while trying to connect'
-    setUserLED true
-    waitMillis 300
-    setUserLED false
-    waitMillis 300
-  }
-  repeat 6 {
-    comment 'Quick blinks when connected'
-    setUserLED true
-    waitMillis 50
-    setUserLED false
-    waitMillis 50
-  }
-  sayIt 'My IP address is:' ('[net:myIPAddress]')
-}
-
-to wifiCreateHotspot ssid password {
-  if (not ('[net:hasWiFi]')) {return}
-  if ((size password) < 8) {
-    sayIt 'Password must be at least 8 characters'
-    return 0
-  }
-  '[net:startWiFi]' ssid password true
-  if ('Connected' != ('[net:wifiStatus]')) {
-    sayIt 'Could not create hotspot'
-    return 0
-  }
-  repeat 6 {
-    comment 'Quick blinks when connected'
-    setUserLED true
-    waitMillis 50
-    setUserLED false
-    waitMillis 50
-  }
-  sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 

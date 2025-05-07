@@ -3,12 +3,16 @@ author unknown
 version 1 0 
 description ''
 
-script 122 51 {
+script 80 51 {
 whenStarted
 forever {
-  roboESP32_set_servo 'D4' -90
+  'roboESP32_increase_RGB _brightness' 50
+  roboESP32_set_RGB '0' (colorSwatch 255 0 0 255)
+  roboESP32_set_RGB '1' (colorSwatch 0 0 255 255)
   waitMillis 1000
-  roboESP32_set_servo 'D4' -90
+  roboESP32_set_RGB 'all' (colorSwatch 0 255 0 255)
+  waitMillis 1000
+  roboESP32_set_RGB 'all' (colorSwatch 0 0 0 255)
   waitMillis 1000
 }
 }
