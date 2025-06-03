@@ -13,7 +13,7 @@
 #include <BlynkSimpleEsp32.h>
 #include "DHT.h"
 
-#define DHTPIN 32
+#define DHTPIN 16
 #define DHTTYPE DHT11  //Using DHT11 sensor module
 DHT dht(DHTPIN, DHTTYPE);
 
