@@ -18,7 +18,7 @@ WEBSITE  : www.cytron.io
 EMAIL    : support@cytron.io
 */
 
-const int MakerSoil = 39;
+const int MakerSoil = 36;
 int inputvalue = 0;
 float readingvalue = 0;
 
