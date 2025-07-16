@@ -1,5 +1,6 @@
-# Cytron ROBO ESP32 Simplifying Robotics with ESP32
+# Cytron ROBO ESP32: Simplifying Smart Projects with ESP32
 If you are new to Cytron Robo ESP32 and want to get started quickly, you are in the right place! Here you will find all the information you need to set up your hardware and software and start coding with the Cytron Robo ESP32.
+
 ![Robo ESP32 Features Label](https://github.com/CytronTechnologies/Cytron-ROBO-ESP32/blob/main/images/robo-esp32-features-label.png)
 
 ## Requirements  
