@@ -9,8 +9,8 @@
 
 // WiFi Credentials
 const char* host = "esp32";
-const char* ssid = "Cytron";
-const char* password = "f5f4f3f2f1";
+const char* ssid = "CytronVeryFastWifi";
+const char* password = "CytronVerySecurePassword";
 
 
 WebServer server(80);
