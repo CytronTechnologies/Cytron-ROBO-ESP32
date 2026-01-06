@@ -10,7 +10,7 @@ If you are new to Cytron Robo ESP32 and want to get started quickly, you are in 
 * [OLED Display SSD1306](https://my.cytron.io/p-oled-i2c-0.96inch-128x64-blue-display)  
 
 **Software:**  
-This repository includes code for [Arduino IDE](https://www.arduino.cc/en/software) and MicroBlocks (Coming soon). 
+This repository includes code for [Arduino IDE](https://www.arduino.cc/en/software) and [MicroBlocks](https://microblocks.fun/run/microblocks.html). 
 
 ## Resources
 For more information on the Robo ESP32, check out the product page on the resources section:  
@@ -19,7 +19,7 @@ For more information on the Robo ESP32, check out the product page on the resour
 **Tutorial**  
 Still new to Robo ESP32 or ESP32, can visit the Getting Started Guide:
 * [Getting Started with Robo ESP32 and Arduino IDE](https://my.cytron.io/tutorial/getting-started-guide-with-robo-esp32)
-* Getting Started with Robo ESP32 and MicroBlocks (Coming soon)
+* [Getting Started with Robo ESP32 and MicroBlocks](https://my.cytron.io/tutorial/roboesp32-microblocks)
 
 ## Support  
 If you need further assistance, we welcome you to our [technical forum](http://forum.cytron.io) or contact us through email support@cytron.io where our team will gladly assist you. 
