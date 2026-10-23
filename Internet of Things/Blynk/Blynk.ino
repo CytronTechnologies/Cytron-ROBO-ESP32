@@ -1,13 +1,12 @@
 #define BLYNK_PRINT Serial
 
 //Replace with your Blynk Template ID and Template Name
-#define BLYNK_TEMPLATE_ID "TMPL6ncjOOsFY"
-#define BLYNK_TEMPLATE_NAME "Robo ESP32 Temperature Monitoring System"
-#define BLYNK_AUTH_TOKEN "yxTjYly3mMr-bNhd1Vbn4_9DcrndtQbZ"
+#define BLYNK_TEMPLATE_ID "YOUR_TEMPLATE_ID"  // Blynk Console > Templates > your template
+#define BLYNK_AUTH_TOKEN "YOUR_BLYNK_AUTH_TOKEN"  // Blynk Console > Devices > your device > Device Info
 
 //Replace with your WiFi SSID and password
-#define WIFI_SSID "CytronVeryFastWifi"
-#define WIFI_PASS "CytronVerySecurePassword"
+#define WIFI_SSID "YOUR_WIFI_SSID"  // your Wi-Fi network name
+#define WIFI_PASS "YOUR_WIFI_PASSWORD"  // your Wi-Fi password
 
 #include <WiFi.h>
 #include <BlynkSimpleEsp32.h>
